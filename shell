@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+#if [ -z "$1" ]
+#  then
+#    docker-compose exec --user www-data apache bash
+#else
+#    docker-compose exec --user $@ apache bash
+#fi
+
+docker exec -it  xdebug-php_apache_with_php_1 /bin/bash
