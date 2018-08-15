@@ -1,10 +1,15 @@
-FROM php:7.0.19-apache
+FROM php:7.0-fpm
 
-LABEL maintainer "Shmuel Maruani | LimitlessV | Limitless Virtue LLC"
+
+LABEL maintainer="Shmuel Maruani | LimitlessV | Limitless Virtue LLC"
 
 ENV XDEBUG_PORT 9000
 
-# Install System Dependencies
+RUN docker-php-ext-install pdo_mysql
+
+RUN pecl install xdebug
+RUN docker-php-ext-enable xdebug
+
 
 RUN apt-get update \
 	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -25,7 +30,6 @@ RUN apt-get update \
 	mysql-client \
 	git \
 	vim \
-	nano \
 	wget \
 	curl \
 	lynx \
@@ -34,43 +38,12 @@ RUN apt-get update \
 	tar \
 	cron \
 	bash-completion \
-	&& apt-get clean
+    && apt-get clean
 
-
-
-RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/;
-RUN docker-php-ext-install opcache gd bcmath intl mbstring mcrypt pdo_mysql soap xsl zip
-RUN apt-get update && apt-get install -y libpcre3 libpcre3-dev
-# php-pear
-RUN pecl install oauth && echo "extension=oauth.so" > /usr/local/etc/php/conf.d/docker-php-ext-oauth.ini
-
-# Install Node, NVM, NPM and Grunt
-RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
-  	&& apt-get install -y nodejs build-essential \
-    && curl https://raw.githubusercontent.com/creationix/nvm/v0.16.1/install.sh | sh \
-    && npm i -g grunt-cli yarn
-
-# Install Composer
-RUN	curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer
-RUN composer global require hirak/prestissimo
-
-ENV PATH="/var/www/.composer/vendor/bin/:${PATH}"
-
-RUN pecl install xdebug && docker-php-ext-enable xdebug
-
-
-RUN echo 'zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20151012/xdebug.so' >> /usr/local/etc/php/php.ini
-RUN echo 'xdebug.remote_port=9000' >> /usr/local/etc/php/php.ini
-RUN echo 'xdebug.remote_host=localhost' >> /usr/local/etc/php/php.ini
-
-
-#RUN echo 'xdebug.remote_host=192.168.0.7' >> /usr/local/etc/php/php.ini
-RUN echo 'xdebug.remote_mode=req' >> /usr/local/etc/php/php.ini
-RUN echo 'xdebug.remote_handler=dbgp' >> /usr/local/etc/php/php.ini
-RUN echo 'xdebug.remote_enable=1' >> /usr/local/etc/php/php.ini
-RUN echo 'xdebug.remote_connect_back=1' >> /usr/local/etc/php/php.ini
-RUN echo 'xdebug.idekey=IDEA_DEBUG' >> /usr/local/etc/php/php.ini
+ADD opt/limitlessv/php/php.ini /usr/local/etc/php/php.ini
 
 VOLUME /var/www/html
 WORKDIR /var/www/html
 
+
+#COPY conf/php.ini /etc/php/7.1/fpm/conf.d/40-custom.ini
